@@ -1,0 +1,14 @@
+hook type:
+
+fingerprint
+globals
+network
+binder
+dex
+reflection
+crypto
+generic
+sms
+runtime
+content
+file
