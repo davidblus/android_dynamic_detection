@@ -134,8 +134,12 @@ def dynamic_main(file_path):
 
 def print_x_log_analysis_result(result):
     print u'\n检测到敏感行为：'
-    for temp in result:
-        print temp 
+    for temp in result['sensitives']:
+        print temp
+    
+    print u'\n检测到漏洞：'
+    for temp in result['vulnerabilities']:
+        print temp
     return
 
 def test_dynamic():

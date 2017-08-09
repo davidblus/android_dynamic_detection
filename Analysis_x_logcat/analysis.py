@@ -202,7 +202,8 @@ def analysis_x_logcat(x_file_name, app_info):
     vulnerabilities = transfer_func_to_vul(func_statistic, app_info)
     save_file(x_file_name + '_vulnerabilities.json', vulnerabilities)
 
-    return sensitives
+    result = {'sensitives': sensitives, 'vulnerabilities': vulnerabilities}
+    return result
 
 def test():
     global FILE_HOOKS_JSON
