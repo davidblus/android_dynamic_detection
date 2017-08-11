@@ -118,6 +118,7 @@ def load_x_file(x_file_name, package_name):
     globals = {
         'false': False, 
         'true': True, 
+        'null': None, 
     }
     with open(x_file_name) as x_file:
         x_lines = x_file.readlines()

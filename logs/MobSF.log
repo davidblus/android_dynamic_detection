@@ -336,3 +336,7 @@
 [ERROR] Parsing Manifest file (F:\工作\安普诺\Android 动态行为分析 与 动态漏洞检测\订制Android行为动态分析\StaticAnalyzer\views\android\manifest_analysis.py, LINE 40 "exit()"): None
 [2017-08-04 17:38:56]
 [ERROR] Extracting Manifest Data (F:\工作\安普诺\Android 动态行为分析 与 动态漏洞检测\订制Android行为动态分析\StaticAnalyzer\views\android\manifest_analysis.py, LINE 75 "permissions = mfxml.getElementsByTagName("uses-permission")"): 'NoneType' object has no attribute 'getElementsByTagName'
+[2017-08-11 21:20:15]
+[ERROR]  Connecting to VM/Device (F:\工作\安普诺\Android 动态行为分析 与 动态漏洞检测\订制Android行为动态分析\DynamicAnalyzer\views\android\android_dyn_shared.py, LINE 24 "subprocess.call([adb, "-s", get_identifier(), "wait-for-device"])"): 
+[2017-08-11 21:20:17]
+[ERROR]  Starting App for Dynamic Analysis (F:\工作\安普诺\Android 动态行为分析 与 动态漏洞检测\订制Android行为动态分析\DynamicAnalyzer\views\android\android_dyn_shared.py, LINE 46 ""install", "-r", apk_path])"): 

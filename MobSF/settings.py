@@ -373,11 +373,11 @@ else:
     # VM UUID
     UUID = 'a4e3ebe1-75c3-4159-a306-9b31a4985984'
     # Snapshot UUID
-    #SUUID = '624cc33f-f452-48e2-ae5e-cc09eb009e80'
-    #SUUID = '8aa5d4fe-e196-4b38-ab69-546cf7ffeab6'
-    SUUID = '6d0e883c-8b88-46cd-b420-499877718f5b'
+    SUUID = 'ee6dc3e7-1b00-4129-b647-dc6290eb80a6'
+    #SUUID = '6d0e883c-8b88-46cd-b420-499877718f5b'
     # IP of the MobSF VM
-    VM_IP = '192.168.1.159'
+    VM_IP = '10.128.169.231'
+    #VM_IP = '192.168.1.159'
     VM_ADB_PORT = 5555
     VM_TIMEOUT = 100
     #==============================================
@@ -387,7 +387,6 @@ else:
     #--------------------------
 
     #================HOST/PROXY SETTINGS ===============
-    # PROXY_IP = '192.168.1.122'  # Host/Server/Proxy IP
     PROXY_IP = '192.168.1.234'  # Host/Server/Proxy IP
     PORT = 1337  # Proxy Port
     ROOT_CA = '0025aabb.0'
