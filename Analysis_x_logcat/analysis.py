@@ -11,11 +11,7 @@ from vulnerability_detection import transfer_func_to_vul
 FILE_HOOKS_JSON = 'Analysis_x_logcat/hooks.json'
 
 #  api调用->敏感行为 规则
-FUNCTION_TO_SENSITIVE_BEHAVIOR = [
-    {'function_list': [('android.content.pm.PackageManager', 'checkPermission')], 
-        'name': u'申请权限'}, 
-    {'function_list': [('android.content.pm.IPackageManager', 'checkPermission')], 
-        'name': u'申请权限'}, 
+FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH = [
     {'function_list': [('android.telephony.TelephonyManager', 'getSimSerialNumber')], 
         'name': u'本机SIM卡序列号查看'}, 
     {'function_list': [('android.telephony.TelephonyManager', 'getLine1Number')], 
@@ -33,18 +29,18 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
     {'function_list': [('android.telephony.TelephonyManager', 'getNetworkCountryIso')], 
         'name': u'查看网络所在的国家代码'}, 
     {'function_list': [('android.telephony.TelephonyManager', 'getNetworkOperator')], 
-        'name': u'查看mobile country code + mobile network code'}, 
+        'name': u'查看移动设备国家代码和移动设备网络代码'}, 
     {'function_list': [('android.telephony.TelephonyManager', 'getNetworkOperatorName')], 
         'name': u'本机运营商查看'}, 
-    {'function_list': [('android.app.admin.DevicePolicyManager', 'isAdminActive')], 
+    {'function_list': [('android.content.Intent', 'putExtra', {'0': 'android.app.extra.DEVICE_ADMIN'})], 
         'name': u'注册设备管理器'}, 
     {'function_list': [('android.app.admin.DevicePolicyManager', 'lockNow')], 
         'name': u'锁屏'}, 
     {'function_list': [('java.lang.reflect.Method', 'invoke')], 
         'name': u'调用了java反射机制'}, 
-    {'function_list': [('java.lang.Class', 'getMethod', [(1, 'setMobileDataEnabled')])], 
+    {'function_list': [('java.lang.Class', 'getMethod', {'0': 'setMobileDataEnabled'})], 
         'name': u'开启移动网络连接'}, 
-    {'function_list': [('java.lang.Class', 'getDeclaredMethod', [(1, 'setMobileDataEnabled')])], 
+    {'function_list': [('java.lang.Class', 'getDeclaredMethod', {'0': 'setMobileDataEnabled'})], 
         'name': u'开启移动网络连接'}, 
     {'function_list': [('android.net.wifi.WifiInfo', 'getMacAddress')], 
         'name': u'查看wifi的MAC地址'}, 
@@ -52,6 +48,8 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
         'name': u'开启wifi'}, 
     {'function_list': [('android.os.Debug', 'isDebuggerConnected')], 
         'name': u'检测了是否被jdb调试'}, 
+    {'function_list': [('java.lang.Runtime', 'exec', {'0': 'su'})], 
+        'name': u'请求Root权限'}, 
     {'function_list': [('java.lang.Runtime', 'exec')], 
         'name': u'调用底层linux程序'}, 
     {'function_list': [('android.telephony.PhoneNumberUtils', 'getNumberFromIntent')], 
@@ -62,6 +60,12 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
         'name': u'发送短信'}, 
     {'function_list': [('android.telephony.SmsManager', 'sendMultipartTextMessage')], 
         'name': u'发送彩信'}, 
+    {'function_list': [('android.content.IntentFilter', 'addAction', {'0': 'android.provider.Telephony.SMS_RECEIVED'}), 
+                       ('android.content.IntentFilter', 'setPriority', {'0': '2147483647'}), ], 
+        'name': u'短信接收器注册'}, 
+    {'function_list': [('android.os.Bundle', 'get', {'0': 'pdus’'}), 
+                       ('android.content.BroadcastReceiver', 'abortBroadcast'), ], 
+        'name': u'拦截短信'}, 
     {'function_list': [('android.telephony.SmsMessage', 'createFromPdu'), 
                        ('android.content.IntentFilter', 'setPriority'), 
                        ('android.content.BroadcastReceiver', 'abortBroadcast')], 
@@ -80,7 +84,7 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
         'name': u'拍照摄像'}, 
     {'function_list': [('android.media.MediaRecorder', 'start')], 
         'name': u'摄像'}, 
-    {'function_list': [('android.content.pm.PackageManager', 'setComponentEnabledSetting')], 
+    {'function_list': [('android.content.pm.PackageManager', 'setComponentEnabledSetting', {'1': '2', '2': '1'})], 
         'name': u'隐藏图标'}, 
     {'function_list': [('javax.mail.Transport', 'sendMessage')], 
         'name': u'发送邮件'}, 
@@ -102,6 +106,8 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
         'name': u'卸载应用程序'}, 
     {'function_list': [('android.content.pm.PackageManager', 'installPackage')], 
         'name': u'安装应用程序'}, 
+    {'function_list': [('android.content.Intent', 'setDataAndType', {'1': 'application/vnd.android.package-archive'})], 
+        'name': u'安装应用程序'}, 
     {'function_list': [('android.content.pm.PackageManager', 'getInstalledPackages')], 
         'name': u'获取已安装包名'}, 
     {'function_list': [('android.app.ActivityManager', 'getRunningTasks')], 
@@ -113,6 +119,26 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR = [
     {'function_list': [('android.os.SystemProperties', 'get')], 
         'name': u'查看Android系统属性'}, 
 ]
+FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN = [
+    {'function': ('android.content.ContentResolver', 'registerContentObserver', {'0': 'content://sms'}), 
+        'name': u'短信监听'}, 
+    {'function': ('android.content.ContentResolver', 'update', {'0': 'content://sms'}), 
+        'name': u'更改短信'}, 
+    {'function': ('android.content.ContentResolver', 'insert', {'0': 'content://sms'}), 
+        'name': u'短信插入'}, 
+    {'function': ('android.content.ContentResolver', 'query', {'0': 'content://sms'}), 
+        'name': u'查看短信'}, 
+    {'function': ('android.content.ContentResolver', 'query', {'0': 'content://icc/adn'}), 
+        'name': u'查看通讯录'}, 
+    {'function': ('android.content.ContentResolver', 'delete', {'0': 'content://sms'}), 
+        'name': u'删除短信'}, 
+    {'function': ('android.content.ContentResolver', 'delete', {'0': 'content://icc/adn'}), 
+        'name': u'删除通讯录'}, 
+]
+
+
+
+
 
 def load_x_file(x_file_name, package_name):
     globals = {
@@ -126,7 +152,8 @@ def load_x_file(x_file_name, package_name):
     droidmon_prefix = 'Droidmon-apimonitor-'
     for x_line in x_lines:
         if x_line.startswith(droidmon_prefix + package_name):
-            value_dict = eval(x_line[len(droidmon_prefix + package_name) + 1:], globals)
+            #value_dict = eval(x_line[len(droidmon_prefix + package_name) + 1:], globals)
+            value_dict = json.loads(x_line[len(droidmon_prefix + package_name) + 1:])
             data.append(value_dict)
     return data
 
@@ -153,25 +180,51 @@ def count_function(hook_datas, package_name):
                 'method': hook_data['method'], 'call_list': hook_data[package_name]})
     return function_list
 
-def exist_sen_func(class_func, function_real_list):
+def exist_sen_func_full_match(class_func, function_real_list):
     for function_real in function_real_list:
         if class_func[0] == function_real['class'] and class_func[1] == function_real['method']:
-            # 无参数的情况
-            if len(class_func) == 2:
+            if len(class_func) == 2:# 无参数的情况
                 return True
-            # TODO: 考虑有参数的情况，参数列表从0开始，意思是需要匹配的参数是个字典，key从0开始。
-            # 例如规则：{'function_list': [('android.content.pm.PackageManager', 'checkPermission', {'0': '匹配第一个参数', '1': '匹配第二个参数'})], 'name': u'申请权限'}, 
+            else:
+                match_args = class_func[2]
+                for single_call in function_real['call_list']:
+                    args_real = single_call['args']
+                    flag = True
+                    for match_positon in match_args.keys():
+                        if args_real[int(match_positon)] != match_args.get(match_positon):
+                            flag = False
+                            break
+                    if flag:
+                        return True
+    return False
+
+def exist_sen_func_uri_contain(class_func, function_real_list):
+    for function_real in function_real_list:
+        if class_func[0] == function_real['class'] and class_func[1] == function_real['method']:
+            match_args = class_func[2]
+            for single_call in function_real['call_list']:
+                args_real = single_call['args']
+                flag = True
+                for match_positon in match_args.keys():
+                    if match_args.get(match_positon) not in args_real[int(match_positon)]['uriString']:
+                        flag = False
+                        break
+                if flag:
+                    return True
     return False
 
 def transfer_func_to_sen(function_real_list):
     sensitives = []
-    for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR:
+    for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH:
         flag = True
         for func_rule in func_to_sen['function_list']:
-            if not exist_sen_func(func_rule, function_real_list):
+            if not exist_sen_func_full_match(func_rule, function_real_list):
                 flag = False
                 break;
         if flag:
+            sensitives.append(func_to_sen['name'])
+    for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN:
+        if exist_sen_func_uri_contain(func_to_sen['function'], function_real_list):
             sensitives.append(func_to_sen['name'])
     return sensitives
 

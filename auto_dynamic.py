@@ -89,12 +89,13 @@ def connect_device(adb):
 
 def auto_app_test(adb, packagename):
     print u'\n[INFO] 开始自动化测试...'
-    # monkey 测试
-    subprocess.call([adb, '-s', get_identifier(), 'shell', 
+    # monkey 测试，输出太多，重定向输出
+    p = subprocess.Popen([adb, '-s', get_identifier(), 'shell', 
                 'monkey', '-p', packagename, 
                 '--ignore-crashes', '--ignore-timeouts', 
                 '--monitor-native-crashes', 
-                '-v', '-v', '-v', '1000'])
+                '-v', '-v', '-v', '1000'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    useless_stdout, useless_stderr = p.stdout.read(), p.stderr.read()
     
     # TODO: 添加其他测试方法
     return

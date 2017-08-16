@@ -1,9 +1,11 @@
 # -*- coding: utf_8 -*-
 """Module for android manifest analysis."""
 
+import chardet
 import io
 import os
 import subprocess
+import traceback
 
 from xml.dom import minidom
 
@@ -23,19 +25,20 @@ def get_manifest(app_dir, toosl_dir, typ, binary):
     try:
         dat = read_manifest(app_dir, toosl_dir, typ, binary).replace("\n", "")
         # changed by davidblus
-        try:
-            dat = dat.decode('gb2312')
-        except Exception as err:
-            print 'type(dat):', type(dat)
         with open(app_dir + 'new_AndroidManifest.xml', 'w') as file:
             file.write(dat)
+        try:
+            dat = dat.decode('gb2312', 'ignore')
+        except Exception as err:
+            print "davidblus:", traceback.format_exc()
+            print 'type(dat):', type(dat)
+            print 'chardet.detect(dat):', chardet.detect(dat)
         
         try:
             print "[INFO] Parsing AndroidManifest.xml"
             manifest = minidom.parseString(dat)
         except:
             # changed by davidblus
-            import traceback
             print "davidblus:", traceback.format_exc()
             exit()
             PrintException("[ERROR] Pasrsing AndroidManifest.xml")

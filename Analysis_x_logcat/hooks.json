@@ -1,6 +1,36 @@
 {
     "hookConfigs": [
         {
+            "class_name": "android.content.Intent", 
+            "method": "setDataAndType", 
+            "thisObject": true, 
+            "type": "content"
+        }, 
+        {
+            "class_name": "android.content.ContentResolver", 
+            "method": "update", 
+            "thisObject": true, 
+            "type": "content"
+        }, 
+        {
+            "class_name": "android.os.Bundle", 
+            "method": "get", 
+            "thisObject": true, 
+            "type": "generic"
+        }, 
+        {
+            "class_name": "android.content.Intent", 
+            "method": "putExtra", 
+            "thisObject": true, 
+            "type": "content"
+        }, 
+        {
+            "class_name": "android.content.IntentFilter", 
+            "method": "addAction", 
+            "thisObject": true, 
+            "type": "content"
+        }, 
+        {
             "class_name": "java.util.zip.ZipEntry", 
             "method": "getName", 
             "thisObject": true, 
