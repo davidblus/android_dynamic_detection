@@ -38,7 +38,7 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH = [
         'name': u'锁屏'}, 
     {'function_list': [('java.lang.reflect.Method', 'invoke')], 
         'name': u'调用java反射机制'},
-    {'function_list': [('java.lang.Class', 'getMethod', [(1, 'setMobileDataEnabled')])], 
+    {'function_list': [('java.lang.Class', 'getMethod', {'0': 'setMobileDataEnabled'})], 
         'name': u'开启移动网络连接'}, 
     {'function_list': [('java.lang.Class', 'getDeclaredMethod', {'0': 'setMobileDataEnabled'})], 
         'name': u'开启移动网络连接'}, 
