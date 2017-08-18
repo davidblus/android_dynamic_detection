@@ -1,5 +1,0 @@
-/dcim/camera/
-/dcim/100andro/
-/dcim/100media/
-/dcim/screenshots/
-/pictures/screenshots/

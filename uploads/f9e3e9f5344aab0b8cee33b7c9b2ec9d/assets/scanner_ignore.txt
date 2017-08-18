@@ -1,8 +1,0 @@
-[es-path-list]
-
-[es-filename-list]
-.estrongs
-
-[es-extension-list]
-.db
-.db-journal
