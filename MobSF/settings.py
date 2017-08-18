@@ -374,7 +374,7 @@ else:
     UUID = 'a4e3ebe1-75c3-4159-a306-9b31a4985984'
     # Snapshot UUID
     #SUUID = 'ee6dc3e7-1b00-4129-b647-dc6290eb80a6'
-    SUUID = '45b08ecf-c032-47b4-9250-ec334fb93f9f'
+    SUUID = '078b2982-d64c-48b4-a54a-46968808da58'
     # IP of the MobSF VM
     #VM_IP = '10.128.169.231'
     VM_IP = '192.168.1.159'

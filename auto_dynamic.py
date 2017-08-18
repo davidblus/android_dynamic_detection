@@ -20,6 +20,7 @@ from StaticAnalyzer.views.android.manifest_analysis import get_manifest
 from StaticAnalyzer.views.android.manifest_analysis import manifest_data as get_manifest_data
 from StaticAnalyzer.views.shared_func import Unzip
 import subprocess
+import time
 import traceback
 
 from Analysis_x_logcat.analysis import analysis_x_logcat
@@ -124,6 +125,8 @@ def dynamic_main(file_path):
     
     # Change True to support non-activity components
     install_and_run(DYNAMIC_TOOL_DIR, app_info['apk_path'], app_info['packagename'], app_info['mainactivity'], True)
+    time.sleep(60)
+    
     auto_app_test(adb, app_info['packagename'])
     
     download_dir = DOWNLOAD_DIR + app_info['file_md5'] + '/'
