@@ -100,6 +100,7 @@ def auto_app_test(adb, packagename):
     start_time = time.time()
     while True:
         if p.poll() is not None:
+            #useless_out, useless_err = p.communicate()
             break
         if time.time() - start_time > 60:
             p.terminate()
