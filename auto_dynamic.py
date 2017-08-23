@@ -96,7 +96,15 @@ def auto_app_test(adb, packagename):
                 '--ignore-crashes', '--ignore-timeouts', 
                 '--monitor-native-crashes', 
                 '-v', '-v', '-v', '1000'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    useless_stdout, useless_stderr = p.stdout.read(), p.stderr.read()
+    # 设置超时检查
+    start_time = time.time()
+    while True:
+        if p.poll() is not None:
+            break
+        if time.time() - start_time > 60:
+            p.terminate()
+            break
+        time.sleep(0.5)
     
     # TODO: 添加其他测试方法
     return
