@@ -191,7 +191,11 @@ def exist_sen_func_full_match(class_func, function_real_list):
                     args_real = single_call['args']
                     flag = True
                     for match_positon in match_args.keys():
-                        if args_real[int(match_positon)] != match_args.get(match_positon):
+                        try:
+                            if args_real[int(match_positon)] != match_args.get(match_positon):
+                                flag = False
+                                break
+                        except IndexError as err:
                             flag = False
                             break
                     if flag:
