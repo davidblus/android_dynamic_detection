@@ -75,6 +75,7 @@ def manifest_data(mfxml):
         mainact = ''
         androidversioncode = ''
         androidversionname = ''
+        application_name = ''
         permissions = mfxml.getElementsByTagName("uses-permission")
         manifest = mfxml.getElementsByTagName("manifest")
         activities = mfxml.getElementsByTagName("activity")
@@ -83,6 +84,9 @@ def manifest_data(mfxml):
         receivers = mfxml.getElementsByTagName("receiver")
         libs = mfxml.getElementsByTagName("uses-library")
         sdk = mfxml.getElementsByTagName("uses-sdk")
+        application = mfxml.getElementsByTagName("application")
+        for node in application:
+            application_name = node.getAttribute("android:name")
         for node in sdk:
             minsdk = node.getAttribute("android:minSdkVersion")
             maxsdk = node.getAttribute("android:maxSdkVersion")
@@ -158,7 +162,8 @@ def manifest_data(mfxml):
             'max_sdk': maxsdk,
             'target_sdk': targetsdk,
             'androver': androidversioncode,
-            'androvername': androidversionname
+            'androvername': androidversionname,
+            'application_name': application_name
         }
 
         return man_data_dic

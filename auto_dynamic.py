@@ -13,6 +13,7 @@ from DynamicAnalyzer.views.android.android_dyn_shared import install_and_run
 from DynamicAnalyzer.views.android.android_dyn_shared import web_proxy
 from DynamicAnalyzer.views.android.android_dyn_shared import get_identifier
 from DynamicAnalyzer.views.android.android_virtualbox_vm import refresh_vm
+import json
 from mass_static_analysis import genMD5
 from MobSF.utils import getADB
 import signal
@@ -49,6 +50,7 @@ def get_static_info(file_path):
     
     manifest_data = get_manifest_data(manifest_xml)
     print 'manifest_data["packagename"]:', manifest_data['packagename']
+    print 'manifest_data["application_name"]:', manifest_data['application_name']
     print 'manifest_data["mainactivity"]:', manifest_data['mainactivity']
     
     manifest_data['file_md5'] = file_md5
@@ -149,8 +151,7 @@ def dynamic_main(file_path):
 
 def print_x_log_analysis_result(result):
     print u'\n检测到敏感行为：'
-    for temp in result['sensitives']:
-        print temp
+    print json.dumps(result['sensitives'], indent=4, ensure_ascii=False)
     
     print u'\n检测到漏洞：'
     for temp in result['vulnerabilities']:

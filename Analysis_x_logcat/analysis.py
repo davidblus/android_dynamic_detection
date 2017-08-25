@@ -136,9 +136,28 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN = [
         'name': u'删除通讯录'}, 
 ]
 
+def add_java_package_name(java_package_names, name):
+    try:
+        name = name[:name.rindex('.')]
+        java_package_names.add(name)
+    except ValueError as err:
+        pass
+    return java_package_names
 
-
-
+def set_java_package_names(app_info):
+    java_package_names = set()
+    java_package_names.add(app_info['packagename'])
+    java_package_names = add_java_package_name(java_package_names, app_info['application_name'])
+    for service in app_info['services']:
+        java_package_names = add_java_package_name(java_package_names, service)
+    for activity in app_info['activities']:
+        java_package_names = add_java_package_name(java_package_names, activity)
+    for receiver in app_info['receivers']:
+        java_package_names = add_java_package_name(java_package_names, receiver)
+    for provider in app_info['providers']:
+        java_package_names = add_java_package_name(java_package_names, provider)
+    app_info['java_package_names'] = java_package_names
+    return app_info
 
 def load_x_file(x_file_name, package_name):
     globals = {
@@ -162,13 +181,30 @@ def init_hook_datas(hook_datas, package_name):
         hook_datas['hookConfigs'][i][package_name] = []
     return hook_datas
 
-def make_hooks_datas(x_datas, package_name):
+def add_api_position(x_data, java_package_names):
+    try:
+        exception_lines = x_data['exception'].strip().split('\n\tat ')
+    except KeyError as err:
+        print u'提醒：当前模拟器中的 Droidmon 非订制，不支持定位代码功能'
+        x_data['exception_positions'] = []
+        return x_data
+    useful_exceptions = []
+    for exception_line in exception_lines:
+        for java_package_name in java_package_names:
+            if exception_line.startswith(java_package_name):
+                useful_exceptions.append(exception_line)
+                break
+    x_data['exception_positions'] = useful_exceptions
+    return x_data
+
+def make_hooks_datas(x_datas, package_name, java_package_names):
     with open(FILE_HOOKS_JSON) as hook_file:
         hook_datas = json.load(hook_file)
     hook_datas = init_hook_datas(hook_datas, package_name)
     for i, hook_data in enumerate(hook_datas['hookConfigs']):
         for x_data in x_datas:
             if x_data['class'] == hook_data['class_name'] and x_data['method'] == hook_data['method']:
+                x_data = add_api_position(x_data, java_package_names)
                 hook_datas['hookConfigs'][i][package_name].append(x_data)
     return hook_datas
 
@@ -176,15 +212,24 @@ def count_function(hook_datas, package_name):
     function_list = []
     for hook_data in hook_datas['hookConfigs']:
         if hook_data[package_name]:
+            exception_positions = set()
+            for single_call in hook_data[package_name]:
+                exception_positions = exception_positions | set(single_call['exception_positions'])
             function_list.append({'class': hook_data['class_name'], 
-                'method': hook_data['method'], 'call_list': hook_data[package_name]})
+                'method': hook_data['method'], 'exception_positions': list(exception_positions), 'call_list': hook_data[package_name]})
     return function_list
 
+def add_api_position_single_api(api_positions, exception_positions):
+    for exception_position in exception_positions:
+        api_positions.add(exception_position)
+    return api_positions
+
 def exist_sen_func_full_match(class_func, function_real_list):
+    api_positions = set()
     for function_real in function_real_list:
         if class_func[0] == function_real['class'] and class_func[1] == function_real['method']:
             if len(class_func) == 2:# 无参数的情况
-                return True
+                api_positions = add_api_position_single_api(api_positions, function_real['exception_positions'])
             else:
                 match_args = class_func[2]
                 for single_call in function_real['call_list']:
@@ -199,10 +244,11 @@ def exist_sen_func_full_match(class_func, function_real_list):
                             flag = False
                             break
                     if flag:
-                        return True
-    return False
+                        api_positions = add_api_position_single_api(api_positions, function_real['exception_positions'])
+    return list(api_positions)
 
 def exist_sen_func_uri_contain(class_func, function_real_list):
+    api_positions = set()
     for function_real in function_real_list:
         if class_func[0] == function_real['class'] and class_func[1] == function_real['method']:
             match_args = class_func[2]
@@ -214,22 +260,28 @@ def exist_sen_func_uri_contain(class_func, function_real_list):
                         flag = False
                         break
                 if flag:
-                    return True
-    return False
+                    api_positions = add_api_position_single_api(api_positions, function_real['exception_positions'])
+    return list(api_positions)
 
 def transfer_func_to_sen(function_real_list):
     sensitives = []
     for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH:
         flag = True
+        function_list_apis = []
         for func_rule in func_to_sen['function_list']:
-            if not exist_sen_func_full_match(func_rule, function_real_list):
+            api_positions = exist_sen_func_full_match(func_rule, function_real_list)
+            if not api_positions:
                 flag = False
-                break;
+                break
+            function_list_apis.append({'api': func_rule, 'api_positions': api_positions})
         if flag:
-            sensitives.append(func_to_sen['name'])
+            sensitives.append({func_to_sen['name']: function_list_apis})
     for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN:
-        if exist_sen_func_uri_contain(func_to_sen['function'], function_real_list):
-            sensitives.append(func_to_sen['name'])
+        function_list_apis = []
+        api_positions = exist_sen_func_uri_contain(func_to_sen['function'], function_real_list)
+        if api_positions:
+            function_list_apis.append({'api': func_to_sen['function'], 'api_positions': api_positions})
+            sensitives.append({func_to_sen['name']: function_list_apis})
     return sensitives
 
 def save_file(file_name, data):
@@ -240,13 +292,16 @@ def save_file(file_name, data):
 def analysis_x_logcat(x_file_name, app_info):
     package_name = app_info['packagename']
     
+    # 新的 app_info 包含所有可能的manifest文件中提到的java代码所在的包名
+    app_info = set_java_package_names(app_info)
+    
     # func_timeflow 表示以时间顺序记录的函数调用列表。 TODO: 供后续制定以时间序列调用api的规则，进而检测分析。
     func_timeflow = load_x_file(x_file_name, package_name)
     save_file(x_file_name + '_timeflow_list.json', func_timeflow)
     
     # hook_datas 表示数据处理过程中的中间结果。
-    hook_datas = make_hooks_datas(func_timeflow, package_name)
-    # save_file(x_file_name + '_hook_result.json', hook_datas)
+    hook_datas = make_hooks_datas(func_timeflow, package_name, app_info['java_package_names'])
+    #save_file(x_file_name + '_hook_result.json', hook_datas)
     
     # func_statistic 表示以api为关键字的函数调用列表。 TODO: 供后续制定以api调用详细信息的规则，进而检测分析。
     func_statistic = count_function(hook_datas, package_name)
