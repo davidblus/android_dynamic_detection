@@ -111,6 +111,8 @@ def auto_app_test(adb, packagename):
     return
 
 def download_logs(adb, download_dir):
+    if not os.path.isdir(download_dir):
+        os.makedirs(download_dir)
     subprocess.call([adb,
                      "-s",
                      get_identifier(),
