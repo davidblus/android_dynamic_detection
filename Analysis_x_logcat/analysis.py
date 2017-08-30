@@ -5,6 +5,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+from Global import add_api_position_single_api
 from vulnerability_detection import transfer_func_to_vul
 
 # hooks.json 文件路径
@@ -139,7 +140,8 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN = [
 def add_java_package_name(java_package_names, name):
     try:
         name = name[:name.rindex('.')]
-        java_package_names.add(name)
+        if name:
+            java_package_names.add(name)
     except ValueError as err:
         pass
     return java_package_names
@@ -172,7 +174,12 @@ def load_x_file(x_file_name, package_name):
     for x_line in x_lines:
         if x_line.startswith(droidmon_prefix + package_name):
             #value_dict = eval(x_line[len(droidmon_prefix + package_name) + 1:], globals)
-            value_dict = json.loads(x_line[len(droidmon_prefix + package_name) + 1:])
+            json_line = x_line[len(droidmon_prefix + package_name) + 1:]
+            try:
+                value_dict = json.loads(json_line)
+            except ValueError as err:
+                #print 'json_line:', json_line
+                continue
             data.append(value_dict)
     return data
 
@@ -219,11 +226,6 @@ def count_function(hook_datas, package_name):
                 'method': hook_data['method'], 'exception_positions': list(exception_positions), 'call_list': hook_data[package_name]})
     return function_list
 
-def add_api_position_single_api(api_positions, exception_positions):
-    for exception_position in exception_positions:
-        api_positions.add(exception_position)
-    return api_positions
-
 def exist_sen_func_full_match(class_func, function_real_list):
     api_positions = set()
     for function_real in function_real_list:
@@ -244,7 +246,7 @@ def exist_sen_func_full_match(class_func, function_real_list):
                             flag = False
                             break
                     if flag:
-                        api_positions = add_api_position_single_api(api_positions, function_real['exception_positions'])
+                        api_positions = add_api_position_single_api(api_positions, single_call['exception_positions'])
     return list(api_positions)
 
 def exist_sen_func_uri_contain(class_func, function_real_list):
@@ -260,7 +262,7 @@ def exist_sen_func_uri_contain(class_func, function_real_list):
                         flag = False
                         break
                 if flag:
-                    api_positions = add_api_position_single_api(api_positions, function_real['exception_positions'])
+                    api_positions = add_api_position_single_api(api_positions, single_call['exception_positions'])
     return list(api_positions)
 
 def transfer_func_to_sen(function_real_list):

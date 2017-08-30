@@ -154,8 +154,7 @@ def print_x_log_analysis_result(result):
     print json.dumps(result['sensitives'], indent=4, ensure_ascii=False)
     
     print u'\n检测到漏洞：'
-    for temp in result['vulnerabilities']:
-        print temp
+    print json.dumps(result['vulnerabilities'], indent=4, ensure_ascii=False)
     return
 
 def test_dynamic():
