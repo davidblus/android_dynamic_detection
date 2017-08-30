@@ -265,7 +265,7 @@ def exist_sen_func_uri_contain(class_func, function_real_list):
                     api_positions = add_api_position_single_api(api_positions, single_call['exception_positions'])
     return list(api_positions)
 
-def transfer_func_to_sen(function_real_list):
+def make_sen_data(function_real_list):
     sensitives = []
     for func_to_sen in FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH:
         flag = True
@@ -285,6 +285,17 @@ def transfer_func_to_sen(function_real_list):
             function_list_apis.append({'api': func_to_sen['function'], 'api_positions': api_positions})
             sensitives.append({func_to_sen['name']: function_list_apis})
     return sensitives
+
+def transfer_func_to_sen(function_real_list):
+    sensitives_dict = {}
+    
+    sensitives_list = make_sen_data(function_real_list)
+    for sensitives in sensitives_list:
+        all_api_positions = []
+        for single_api_positions in sensitives.values()[0]:
+            all_api_positions.extend(single_api_positions['api_positions'])
+        sensitives_dict[sensitives.keys()[0]] = all_api_positions
+    return sensitives_dict
 
 def save_file(file_name, data):
     with open(file_name, 'w') as file:
