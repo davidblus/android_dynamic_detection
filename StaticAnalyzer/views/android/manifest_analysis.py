@@ -28,7 +28,7 @@ def get_manifest(app_dir, toosl_dir, typ, binary):
         with open(app_dir + 'new_AndroidManifest.xml', 'w') as file:
             file.write(dat)
         try:
-            dat = dat.decode('gb2312', 'ignore')
+            dat_windows = dat.decode('gb2312', 'ignore')
         except Exception as err:
             print "davidblus:", traceback.format_exc()
             print 'type(dat):', type(dat)
@@ -36,22 +36,10 @@ def get_manifest(app_dir, toosl_dir, typ, binary):
         
         try:
             print "[INFO] Parsing AndroidManifest.xml"
-            manifest = minidom.parseString(dat)
-        except:
+            manifest = minidom.parseString(dat_windows)
+        except Exception as err:
             # changed by davidblus
-            print "davidblus:", traceback.format_exc()
-            exit()
-            PrintException("[ERROR] Pasrsing AndroidManifest.xml")
-            manifest = minidom.parseString(
-                (
-                    r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
-                    r'"http://schemas.android.com/apk/res/android" android:versionCode="Failed"  '
-                    r'android:versionName="Failed" package="Failed"  '
-                    r'platformBuildVersionCode="Failed" '
-                    r'platformBuildVersionName="Failed XML Parsing" ></manifest>'
-                )
-            )
-            print "[WARNING] Using Fake XML to continue the Analysis"
+            manifest = minidom.parseString(dat)
         return manifest
     except:
         PrintException("[ERROR] Parsing Manifest file")
