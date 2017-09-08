@@ -1,6 +1,12 @@
 {
     "hookConfigs": [
         {
+            "class_name": "java.security.SecureRandom", 
+            "method": "nextBytes", 
+            "thisObject": true, 
+            "type": "generic"
+        }, 
+        {
             "class_name": "android.content.Intent", 
             "method": "setDataAndType", 
             "thisObject": true, 

@@ -137,6 +137,15 @@ FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_URI_CONTAIN = [
         'name': u'删除通讯录'}, 
 ]
 
+#白名单  包及子包不检测
+WHITE_LIST = ['map.baidu', 'com.tencent.','com.baidu.','com.alipay.', 'com.unionpay.', 'cn.jpush.', 'com.ali.',
+                  'cn.sharesdk.', 'com.qihoo.', 'com.cld.', 'com.common.', 'android.support.', 'com.actionbarsherlock'
+                  , 'org.', 'com.lidroid', 'cn.jiguang.', 'com.nineoldandroids.', 'cn.bingoogolapple.', 'com.nostra13'
+                  , 'com.jakewharton', 'kankan.', 'com.sobot.', 'tv.danmaku.', 'com.easemob.', 'com.handmark.', 'com.pili.'
+                  , 'fm.jiecao.', 'com.mob.', 'com.ab.', 'cn.finalteam.', 'com.alibaba.', 'com.huawei.', 'com.umeng.'
+                  , 'com.taobao.', 'com.xiaomi.', 'com.tendcloud.', 'com.zzhoujay.', 'com.bluemobi.jxqz.']
+
+
 def add_java_package_name(java_package_names, name):
     try:
         name = name[:name.rindex('.')]
@@ -297,6 +306,30 @@ def transfer_func_to_sen(function_real_list):
         sensitives_dict[sensitives.keys()[0]] = all_api_positions
     return sensitives_dict
 
+# 删除结果列表中 value 为空的 元素。
+def delete_empty_element(result_dict):
+    new_result = {}
+    for (key, value) in result_dict.items():
+        if value:
+            new_result[key] = value
+    return new_result
+
+# 漏洞检测时，去除白名单中包名
+def remove_white(vulnerabilities):
+    new_result = {}
+    for (key, value) in vulnerabilities.items():
+        new_positions = []
+        for position in value:
+            flag = False
+            for white_package in WHITE_LIST:
+                if position.startswith(white_package):
+                    flag = True
+                    break
+            if not flag:
+                new_positions.append(position)
+        new_result[key] = new_positions
+    return new_result
+
 def save_file(file_name, data):
     with open(file_name, 'w') as file:
         file.write(json.dumps(data, indent=4, ensure_ascii=False))
@@ -322,10 +355,13 @@ def analysis_x_logcat(x_file_name, app_info):
     
     # 根据 api调用->敏感行为 规则，查出其具有的敏感行为列表。
     sensitives = transfer_func_to_sen(func_statistic)
+    sensitives = delete_empty_element(sensitives)
     save_file(x_file_name + '_sensitives.json', sensitives)
     
     # 根据 api调用->漏洞 规则，查出其具有的漏洞列表。
     vulnerabilities = transfer_func_to_vul(func_statistic, app_info)
+    vulnerabilities = remove_white(vulnerabilities)
+    vulnerabilities = delete_empty_element(vulnerabilities)
     save_file(x_file_name + '_vulnerabilities.json', vulnerabilities)
 
     result = {'sensitives': sensitives, 'vulnerabilities': vulnerabilities}

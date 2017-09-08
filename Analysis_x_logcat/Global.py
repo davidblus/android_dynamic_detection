@@ -10,5 +10,6 @@ def add_api_position_single_api(api_positions, exception_positions):
         for exception_position in exception_positions:
             api_positions.add(exception_position)
     else:
-        api_positions.add('')
+        pass
+        #api_positions.add('')
     return api_positions
