@@ -90,8 +90,124 @@ def connect_device(adb):
         connect(DYNAMIC_TOOL_DIR)
     return
 
-def auto_app_test(adb, packagename):
+# monkey script 测试
+def monkey_script_test(adb, app_info):
+    monkey_script_pattern = '''
+    type=user
+    count=10
+    speed=1.0
+    start data >>
+    captureDispatchPointer(0,0,0,200,600,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,200,600,1,1,-1,1,1,0,0)
+    UserWait(1000)
+    captureDispatchPointer(0,0,0,400,600,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,400,600,1,1,-1,1,1,0,0)
+    UserWait(1000)
+    captureDispatchPointer(0,0,0,600,600,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,600,600,1,1,-1,1,1,0,0)
+    UserWait(1000)
+    captureDispatchPointer(0,0,0,200,800,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,200,800,1,1,-1,1,1,0,0)
+    UserWait(1000)
+    captureDispatchPointer(0,0,0,600,1000,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,600,1000,1,1,-1,1,1,0,0)
+    UserWait(3000)
+    LaunchActivity({packagename}, {mainactivity})
+    UserWait(5000)
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    Drag({screen_x_right},{screen_y_middle},{screen_x_left},{screen_y_middle},70)
+    UserWait({drag_wait})
+    captureDispatchPointer(0,0,0,{screen_x_middle},100,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},100,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},200,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},200,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},300,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},300,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},400,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},400,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},500,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},500,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},600,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},600,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},700,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},700,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},800,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},800,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},900,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},900,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},1000,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},1000,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},1100,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},1100,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,0,{screen_x_middle},1200,1,1,-1,1,1,0,0)
+    captureDispatchPointer(0,0,1,{screen_x_middle},1200,1,1,-1,1,1,0,0)
+    UserWait(1000)
+    captureDispatchPress(4)
+    captureDispatchPress(4)
+    captureDispatchPress(4)
+    '''
+    drag_wait = 750
+    packagename = app_info['packagename']
+    mainactivity = app_info['mainactivity']
+    if mainactivity.startswith('.'):
+        mainactivity = packagename + mainactivity
+    screen_x_right = 750
+    screen_y_middle = 640
+    screen_x_left = 50
+    screen_x_middle = 400
+    
+    monkey_script_data = monkey_script_pattern.format(drag_wait=drag_wait, 
+        packagename=packagename, mainactivity=mainactivity, 
+        screen_x_right=screen_x_right, screen_y_middle=screen_y_middle, 
+        screen_x_left=screen_x_left, screen_x_middle=screen_x_middle)
+    
+    monkey_script_file_name = os.path.join(os.path.join(UPLOAD_DIR, app_info['file_md5']), 'monkey_script.txt')
+    with open(monkey_script_file_name, 'w') as f:
+        f.write(monkey_script_data)
+    
+    subprocess.call([adb,
+                     "-s",
+                     get_identifier(),
+                     "push",
+                     monkey_script_file_name,
+                     "/data/local/tmp"])
+    subprocess.call([adb,
+                     "-s",
+                     get_identifier(),
+                     "shell",
+                     "monkey", "-f", 
+                     "/data/local/tmp/monkey_script.txt", "1"])
+    print u'\n[INFO] 跳过初始化界面'
+    return
+
+def auto_app_test(adb, app_info):
     print u'\n[INFO] 开始自动化测试...'
+    
+    # monkey script 测试，用于进入初始化界面
+    monkey_script_test(adb, app_info)
+    
+    packagename = app_info['packagename']
     # monkey 测试，输出太多，重定向输出
     p = subprocess.Popen([adb, '-s', get_identifier(), 'shell', 
                 'monkey', '-p', packagename, 
@@ -140,7 +256,7 @@ def dynamic_main(file_path):
     install_and_run(DYNAMIC_TOOL_DIR, app_info['apk_path'], app_info['packagename'], app_info['mainactivity'], True)
     time.sleep(60)
     
-    auto_app_test(adb, app_info['packagename'])
+    auto_app_test(adb, app_info)
     
     download_dir = DOWNLOAD_DIR + app_info['file_md5'] + '/'
     download_logs(adb, download_dir)

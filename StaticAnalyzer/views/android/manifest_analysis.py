@@ -94,15 +94,16 @@ def manifest_data(mfxml):
             act.append(act_2)
             if len(mainact) < 1:
                 # ^ Fix for Shitty Manifest with more than one MAIN
+                for sitem in activity.getElementsByTagName("category"):
+                    val = sitem.getAttribute("android:name")
+                    if val == "android.intent.category.LAUNCHER":
+                        mainact = activity.getAttribute("android:name")
+        for activity in activities:
+            if not mainact:
                 for sitem in activity.getElementsByTagName("action"):
                     val = sitem.getAttribute("android:name")
                     if val == "android.intent.action.MAIN":
                         mainact = activity.getAttribute("android:name")
-                if mainact == '':
-                    for sitem in activity.getElementsByTagName("category"):
-                        val = sitem.getAttribute("android:name")
-                        if val == "android.intent.category.LAUNCHER":
-                            mainact = activity.getAttribute("android:name")
 
         for service in services:
             service_name = service.getAttribute("android:name")
