@@ -6,10 +6,14 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 from Global import add_api_position_single_api
+from make_features import save_file
+from make_features import timeflow_to_numpy
 from vulnerability_detection import transfer_func_to_vul
 
 # hooks.json 文件路径
 FILE_HOOKS_JSON = 'Analysis_x_logcat/hooks.json'
+# s.json 文件路径
+FILE_S_JSON = 'Analysis_x_logcat/s.json'
 
 #  api调用->敏感行为 规则
 FUNCTION_TO_SENSITIVE_BEHAVIOR_RULES_FULL_MATCH = [
@@ -330,11 +334,6 @@ def remove_white(vulnerabilities):
         new_result[key] = new_positions
     return new_result
 
-def save_file(file_name, data):
-    with open(file_name, 'w') as file:
-        file.write(json.dumps(data, indent=4, ensure_ascii=False))
-    return
-
 def analysis_x_logcat(x_file_name, app_info):
     package_name = app_info['packagename']
     
@@ -343,7 +342,11 @@ def analysis_x_logcat(x_file_name, app_info):
     
     # func_timeflow 表示以时间顺序记录的函数调用列表。 TODO: 供后续制定以时间序列调用api的规则，进而检测分析。
     func_timeflow = load_x_file(x_file_name, package_name)
-    save_file(x_file_name + '_timeflow_list.json', func_timeflow)
+    file_timeflow = x_file_name + '_timeflow_list.json'
+    save_file(file_timeflow, func_timeflow)
+    
+    # 把时间顺序记录的函数调用列表转换为二维特征数据
+    timeflow_to_numpy(file_timeflow, FILE_S_JSON)
     
     # hook_datas 表示数据处理过程中的中间结果。
     hook_datas = make_hooks_datas(func_timeflow, package_name, app_info['java_package_names'])
