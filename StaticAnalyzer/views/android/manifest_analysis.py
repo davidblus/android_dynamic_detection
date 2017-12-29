@@ -4,6 +4,7 @@
 import chardet
 import io
 import os
+import platform
 import subprocess
 import traceback
 
@@ -64,7 +65,12 @@ def get_manifest(app_dir, tools_dir, typ, binary):
                 apktool = os.path.join(os.path.join(tools_dir, 'apktool2.2.4'), 'apktool')
                 apktool_dir = os.path.join(app_dir, 'apktool')
                 app_apk = os.path.join(app_dir, 'app.apk')
-                temp = subprocess.call([apktool, "d", "-o", apktool_dir, "-s", app_apk], shell=True)
+                cmd_list = [apktool, "d", "-o", apktool_dir, "-s", app_apk]
+                print cmd_list
+                if platform.system() == 'Windows':
+                    temp = subprocess.call(cmd_list, shell=True)
+                else:
+                    temp = subprocess.call(cmd_list)
                 with open(os.path.join(apktool_dir, 'AndroidManifest.xml')) as fp:
                     dat = fp.read()
                 manifest = minidom.parseString(dat)
