@@ -1,9 +1,11 @@
 # coding: utf-8
 
 import json
+import os
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
+import traceback
 
 from Global import add_api_position_single_api
 from make_features import save_file
@@ -346,7 +348,10 @@ def analysis_x_logcat(x_file_name, app_info):
     save_file(file_timeflow, func_timeflow)
     
     # 把时间顺序记录的函数调用列表转换为二维特征数据
-    timeflow_to_numpy(file_timeflow, FILE_S_JSON)
+    try:
+        timeflow_to_numpy(file_timeflow, FILE_S_JSON)
+    except Exception as e:
+        print u'把时间序列转换为二维特征数据时出异常：', traceback.format_exc()
     
     # hook_datas 表示数据处理过程中的中间结果。
     hook_datas = make_hooks_datas(func_timeflow, package_name, app_info['java_package_names'])
@@ -354,7 +359,8 @@ def analysis_x_logcat(x_file_name, app_info):
     
     # func_statistic 表示以api为关键字的函数调用列表。 TODO: 供后续制定以api调用详细信息的规则，进而检测分析。
     func_statistic = count_function(hook_datas, package_name)
-    save_file(x_file_name + '_count_function.json', func_statistic)
+    file_count_function = x_file_name + '_count_function.json'
+    save_file(file_count_function, func_statistic)
     
     # 根据 api调用->敏感行为 规则，查出其具有的敏感行为列表。
     sensitives = transfer_func_to_sen(func_statistic)
@@ -367,6 +373,11 @@ def analysis_x_logcat(x_file_name, app_info):
     vulnerabilities = delete_empty_element(vulnerabilities)
     save_file(x_file_name + '_vulnerabilities.json', vulnerabilities)
 
+    # 由于临时文件比较大，当硬盘空间不足时，则删除临时文件。
+    # os.remove(x_file_name)
+    # os.remove(file_timeflow)
+    os.remove(file_count_function)
+    
     result = {'sensitives': sensitives, 'vulnerabilities': vulnerabilities}
     return result
 

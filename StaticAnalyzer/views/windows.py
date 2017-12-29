@@ -351,6 +351,7 @@ def __binskim(name, bin_an_dic, run_local=False, app_dir=None):
         # Open the file and return the json
         out_file = open(output_d)
         output = json.loads(out_file.read())
+        out_file.close()
     else:
         # Analyse the sample
         response = proxy.binskim(name, _get_token())
@@ -459,6 +460,7 @@ def __binscope(name, bin_an_dic, run_local=False, app_dir=None):
         # Open the file and return the json
         f = open(output[1])
         response = f.read()
+        f.close()
     else:
         # Analyse the sample via rpc
         response = proxy.binscope(name, _get_token())

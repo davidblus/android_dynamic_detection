@@ -80,6 +80,7 @@ def Unzip(APP_PATH, EXT_PATH):
         PrintException("[ERROR] Unzipping Error")
         if platform.system() == "Windows":
             print "\n[INFO] Not yet Implemented."
+            return files
         else:
             print "\n[INFO] Using the Default OS Unzip Utility."
             try:

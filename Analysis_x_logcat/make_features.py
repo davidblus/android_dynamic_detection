@@ -137,10 +137,11 @@ def save_file(file_name, data):
     return
 
 def timeflow_to_numpy(timeflow_filename, feature_filename):
-    timeflow_filename = timeflow_filename.strip().replace('\\', '')
-    feature_filename = feature_filename.strip().replace('\\', '')
     with open(timeflow_filename) as fp:
         timeflows = json.load(fp)
+    # 当时间序列为空时，则表示未提取到该 apk 运行时的任何特征，抛弃该 apk ，不生成 numpy 文件。
+    if not timeflows:
+        return
     with open(feature_filename) as fp:
         features = json.load(fp)
     
@@ -160,6 +161,8 @@ def timeflow_to_numpy(timeflow_filename, feature_filename):
 def test():
     timeflow_filename = raw_input('请输入 timeflow 文件的绝对路径：')
     feature_filename = raw_input('请输入特征配置文件 s 的绝对路径：')
+    timeflow_filename = timeflow_filename.strip().replace('\\', '')
+    feature_filename = feature_filename.strip().replace('\\', '')
     
     timeflow_to_numpy(timeflow_filename, feature_filename)
     

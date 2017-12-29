@@ -65,11 +65,15 @@ def gen_signed_cert(domain, ca_crt, ca_key, ca_pass, certs_folder):
             serial = int(md5_hash.hexdigest(), 36)
             # The CA stuff is loaded from the same folder as this script
 
+            fp_ca_crt = open(ca_crt)
             ca_cert = crypto.load_certificate(
-                crypto.FILETYPE_PEM, open(ca_crt).read())
+                crypto.FILETYPE_PEM, fp_ca_crt.read())
+            fp_ca_crt.close()
             # The last parameter is the password for your CA key file
+            fp_ca_key = open(ca_key)
             ca_key = crypto.load_privatekey(
-                crypto.FILETYPE_PEM, open(ca_key).read(), ca_pass)
+                crypto.FILETYPE_PEM, fp_ca_key.read(), ca_pass)
+            fp_ca_key.close()
             key = crypto.PKey()
             key.generate_key(crypto.TYPE_RSA, 2048)
             cert = crypto.X509()
@@ -88,8 +92,10 @@ def gen_signed_cert(domain, ca_crt, ca_key, ca_pass, certs_folder):
             # The key and cert files are dumped and their paths are returned
             domain_key = open(key_path, "w")
             domain_key.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+            domain_key.close()
             domain_cert = open(cert_path, "w")
             domain_cert.write(crypto.dump_certificate(
                 crypto.FILETYPE_PEM, cert))
+            domain_cert.close()
             # print(("[*] Generated signed certificate for %s" % (domain)))
     return key_path, cert_path

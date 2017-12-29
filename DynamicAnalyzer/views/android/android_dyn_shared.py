@@ -1,8 +1,10 @@
+# -*- coding: utf8 -*-
 """Shared Functions for Android Dynamic Analyzer"""
-# -*- coding: utf_8 -*-
+
 import subprocess
 import os
 import time
+import traceback
 from django.conf import settings
 from DynamicAnalyzer.pyWebProxy.pywebproxy import Proxy
 from MobSF.utils import PrintException, getADB
@@ -33,28 +35,45 @@ def connect(toolsdir):
             subprocess.call([adb, "-s", get_identifier(), "shell", "mount",
                              "-o", "rw,remount", "-t", "rfs", "/dev/block/sda6", "/system"])
     except:
+        print traceback.format_exc()
         PrintException("[ERROR]  Connecting to VM/Device")
 
+def sign_apk(apk_path):
+    signed_apk_path = os.path.join(os.path.dirname(apk_path), 'app_signed.apk')
+    subprocess.call(['jarsigner', '-keystore', 'davidblus_android.keystore', 
+                     '-storepass', 'davidblus', '-signedjar', signed_apk_path, 
+                     apk_path, 'davidblus_android.keystore'])
+    return signed_apk_path
 
 def install_and_run(toolsdir, apk_path, package, launcher, is_activity):
     """Install APK and Run it"""
     print "\n[INFO] Starting App for Dynamic Analysis"
-    try:
-        adb = getADB(toolsdir)
-        print "\n[INFO] Installing APK"
+    # try:
+    adb = getADB(toolsdir)
+    print "\n[INFO] Installing APK"
+    install_result = subprocess.check_output([adb, "-s", get_identifier(),
+                     "install", "-r", apk_path])
+    print install_result
+    # 如果是未签名的错误，则对其进行签名并安装，
+    # 签名命令示例：jarsigner -verbose -keystore davidblus_android.keystore -storepass davidblus -signedjar app_signed.apk app.apk davidblus_android.keystore
+    if 'INSTALL_PARSE_FAILED_NO_CERTIFICATES' in install_result:
+        signed_apk_path = sign_apk(apk_path)
+        install_result = subprocess.check_output([adb, "-s", get_identifier(),
+                         "install", "-r", signed_apk_path])
+        print install_result
+    if 'Success' not in install_result:
+        raise Exception('Install Error')
+    if is_activity:
+        run_app = package + "/" + launcher
+        print "\n[INFO] Launching APK Main Activity"
         subprocess.call([adb, "-s", get_identifier(),
-                         "install", "-r", apk_path])
-        if is_activity:
-            run_app = package + "/" + launcher
-            print "\n[INFO] Launching APK Main Activity"
-            subprocess.call([adb, "-s", get_identifier(),
-                             "shell", "am", "start", "-n", run_app])
-        else:
-            print "\n[INFO] App Doesn't have a Main Activity"
-            # Handle Service or Give Choice to Select in Future.
-        print "[INFO] Testing Environment is Ready!"
-    except:
-        PrintException("[ERROR]  Starting App for Dynamic Analysis")
+                         "shell", "am", "start", "-n", run_app])
+    else:
+        print "\n[INFO] App Doesn't have a Main Activity"
+        # Handle Service or Give Choice to Select in Future.
+    print "[INFO] Testing Environment is Ready!"
+    # except:
+    #     PrintException("[ERROR]  Starting App for Dynamic Analysis")
 
 
 def wait(sec):

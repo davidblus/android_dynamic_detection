@@ -19,31 +19,60 @@ from MobSF.utils import (
 # pylint: disable=E0401
 from .dvm_permissions import DVM_PERMISSIONS
 
-
+'''
 def get_manifest(app_dir, toosl_dir, typ, binary):
     """Get the manifest file."""
+    dat = read_manifest(app_dir, toosl_dir, typ, binary).replace("\n", "")
+    # changed by davidblus
+    with open(app_dir + 'new_AndroidManifest.xml', 'w') as file:
+        file.write(dat)
     try:
-        dat = read_manifest(app_dir, toosl_dir, typ, binary).replace("\n", "")
+        dat_windows = dat.decode('gb2312', 'ignore')
+    except Exception as err:
+        print "davidblus:", traceback.format_exc()
+        print 'type(dat):', type(dat)
+        print 'chardet.detect(dat):', chardet.detect(dat)
+    
+    try:
+        print "[INFO] Parsing AndroidManifest.xml"
+        manifest = minidom.parseString(dat_windows)
+    except Exception as err:
         # changed by davidblus
-        with open(app_dir + 'new_AndroidManifest.xml', 'w') as file:
-            file.write(dat)
+        try:
+            manifest = minidom.parseString(dat)
+        except Exception as e:
+            print traceback.format_exc()
+            raise Exception('Parsing Manifest Error')
+    return manifest
+'''
+def get_manifest(app_dir, tools_dir, typ, binary):
+    """Get the manifest file."""
+    dat = read_manifest(app_dir, tools_dir, typ, binary).replace("\n", "")
+    # changed by davidblus
+    new_AndroidManifest = os.path.join(app_dir, 'new_AndroidManifest.xml')
+    with open(new_AndroidManifest, 'w') as file:
+        file.write(dat)
+        
+    try:
+        manifest = minidom.parseString(dat)
+    except Exception as err:
         try:
             dat_windows = dat.decode('gb2312', 'ignore')
-        except Exception as err:
-            print "davidblus:", traceback.format_exc()
-            print 'type(dat):', type(dat)
-            print 'chardet.detect(dat):', chardet.detect(dat)
-        
-        try:
-            print "[INFO] Parsing AndroidManifest.xml"
             manifest = minidom.parseString(dat_windows)
         except Exception as err:
-            # changed by davidblus
-            manifest = minidom.parseString(dat)
-        return manifest
-    except:
-        PrintException("[ERROR] Parsing Manifest file")
-
+            try:
+                apktool = os.path.join(os.path.join(tools_dir, 'apktool2.2.4'), 'apktool')
+                apktool_dir = os.path.join(app_dir, 'apktool')
+                app_apk = os.path.join(app_dir, 'app.apk')
+                temp = subprocess.call([apktool, "d", "-o", apktool_dir, "-s", app_apk], shell=True)
+                with open(os.path.join(apktool_dir, 'AndroidManifest.xml')) as fp:
+                    dat = fp.read()
+                manifest = minidom.parseString(dat)
+            except Exception as err:
+                print traceback.format_exc()
+                raise Exception('Parsing Manifest Error')
+            
+    return manifest
 
 def manifest_data(mfxml):
     """Extract manifest data."""
@@ -57,7 +86,7 @@ def manifest_data(mfxml):
         perm = []
         dvm_perm = {}
         package = ''
-        minsdk = ''
+        minsdk = '1'
         maxsdk = ''
         targetsdk = ''
         mainact = ''
